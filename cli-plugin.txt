@@ -1,0 +1,442 @@
+====== Command Line Interface (CLI) Plugin  ======
+
+---- plugin ----
+description: Format command line transcripts
+author     : Chris P. Jobling
+email      : C.P.Jobling@Swansea.ac.uk
+type       : syntax
+lastupdate : 2008-02-13
+compatible : 
+depends    : 
+conflicts  : 
+similar    : code
+tags       : code, cli, syntax, highlighting
+----
+
+This [[wiki:plugins|plugin]] brings a Command Line Interface formatter to [[wiki:Dokuwiki]] allowing you to format the output of a transcript say for a user manual or on-line tutorial. It is designed to work with the output of a standard Unix Bash Shell, but should be suitable to document other kinds of CLI interaction, e.g. Windows Command Window, Python and Ruby, Matlab, etc. 
+
+The assumptions made are 
+  - all user commands start with a prompt 
+  - the CLI prompt will end in a recognizable character (typically '$' or '>')
+  - user commands will follow the CLI prompt on the same line
+  - lines that do not start with a prompt are outputs from the CLI((this turns out to be a problem for the Ruby interactive shell //irb// which seems to prefix every line with a prompt!))
+
+A key design feature is that it should be possible to display a CLI transcript (e.g. output from a history file or copy of text from a console window) for display with the mimumum of additional markup.  
+
+It is possible to adjust the style of the display using a style sheet. For details refer to [[#style.css]].
+
+==== Notes ====
+
+  * My version of this page -- which could be more recently updated -- can be found [[http://eehope.swan.ac.uk/dokuwiki/plugins:cli|here]]
+
+
+
+
+=====Acknowledgements=====
+
+A similar feature is to be found in [[http://moinmoin.wikiwikiweb.de/|MoinMoin Wiki]] and [[http://www.tiddlywiki.com/|TiddlyWiki]]. The styles are based on those developed for the [[http://www.ee.surrey.ac.uk/Teaching/Unix/|UNIX Tutorial for Beginners]] by Michael Stonebank. The plugin and its documentation are based on lessons learned from the [[http://wiki.splitbrain.org/plugin:tutorial|Plugin Tutorial]] and Christopher Smith's implementation and documentation of the [[http://wiki.splitbrain.org/plugin:boxes|boxes plugin]].
+
+Several improvements suggested by Stephane Chazelas and Andy Webber.
+
+
+
+
+
+
+
+
+
+===== Syntax =====
+
+A simple Bash Shell interaction:
+
+  <cli>
+  user@host:~/somedir $ ls # List current directory
+  conf      lang         README        screen.gif  ui
+  info.txt  manager.dat  renderer.php  syntax.php
+  user@host:~/somedir $ 
+  </cli>
+
+Should be rendered:
+
+<html>
+<pre class="cli">
+<span class="cli_prompt">user@host:~/somedir $</span> <span class="cli_command">ls</span> <span class="cli_comment"># List current directory</span>
+<span class="cli_output">conf      lang         README        screen.gif  ui</span>
+<span class="cli_output">info.txt  manager.dat  renderer.php  syntax.php</span>
+<span class="cli_prompt">user@host:~/somedir $</span>
+</pre>
+</html>
+
+The full syntax:  
+
+  <cli prompt='prompt ' comment='comment'>
+  transcript
+  </cli>
+
+  * //prompt// --- [optional] the prompt used by the CLI. ((In practice only the final character is needed as everything on the line up to the final character will be taken to be part of the prompt and everything after will be regarded as a command.)) If no prompt is given, '$ ' (note the space) is assumed (('$ ' is the standard Bash shell prompt)).
+  * //comment// --- [optional] the comment string used by the CLI. If ommitted, '#' is assumed (('#' is the standard Bash shell comment character)).
+  * //continue// -- [optional] the prompt used for continuation markers: regex '/^> /' is the default.
+  *   The defaults above match Bourne shell ${PS1} and ${PS2} prompts and comments
+
+The opening ''**<cli ... >**'' must all appear on one line.  The transcript contents can appear over as many lines as are needed.
+
+See the plugin in action [[http://eehope.swan.ac.uk/dokuwiki/test:cli|here]]. The sample page shows examples from a number of CLI interfaces, including various shells, dynamic language interpreters and Matlab.
+
+===== Configuration =====
+
+The plugin has no configuration settings, although you may want to review the default colour scheme in [[#style.css]] to ensure it is appropriate for your wiki.
+
+
+
+===== Installation =====
+
+==== Sources: ====
+
+  * Current: [[http://eehope.swan.ac.uk/~eechris/dokuwiki/plugins/plugin-cli.zip|zip format (5k)]], [[http://eehope.swan.ac.uk/~eechris/dokuwiki/plugins/plugin-cli.tar.gz|tar.gz format (4k)]]
+
+If your wiki uses the [[plugin:plugin|plugin manager]] you can use them with the links above to install the plugin.  
+
+To install the plugin manually, download the source to your plugin folder, ''lib/plugins'' and extract its contents.  That will create a new plugin folder, ''lib/plugins/cli'', and install the plugin.
+
+The folder will contain:
+  style.css                              all the cli styles
+  syntax.php                             plugin script
+
+The plugin is now installed.
+
+
+
+
+
+
+===== Details =====
+
+==== syntax.php ====
+
+<code php>
+<?php
+/**
+ * Command Line Interface (CLI) Plugin
+ *     Typeset transcripts of interactive sessions with mimumum effort.
+ * Syntax:
+ *     <cli prompt="$ " continue="> " comment="#">
+ *     user@host:~/somedir $ ls \
+ *     > # List directory
+ *     file1 file2
+ *     </cli>
+ *   prompt --- [optional] prompt character used. '$ ' is default - note the space.
+ *   comment --- [optional] comment character used. '#' is default - note no space.
+ *   continue --- [optional] regex of shell continuation '/^> /' is the default.
+ *   The defaults above match Bourne shell ${PS1} and ${PS2} prompts and comment
+ *
+ * Acknowledgements:
+ *  Borrows heavily from the boxes plugin!
+ *  Support for continuation added by Andy Webber
+ *  Improved parsing added by Stephane Chazelas
+ * 
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     Chris P. Jobling <C.P.Jobling@Swansea.ac.uk>
+ */
+ 
+if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../').'/');
+if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
+require_once(DOKU_PLUGIN.'syntax.php');
+ 
+/**
+ * All DokuWiki plugins to extend the parser/rendering mechanism
+ * need to inherit from this class
+ */
+class syntax_plugin_cli extends DokuWiki_Syntax_Plugin {
+    
+    var $prompt_str = '$ ';
+    var $prompt_cont = '/^> /'; // this is a regex
+    var $prompt_continues = false;
+    var $comment_str = '#';
+    
+    /**
+     * return some info
+     */
+    function getInfo(){
+        return array(
+            'author' => 'Chris P. Jobling; Stephan Chazelas; Andy Webber',
+            'email'  => 'C.P.Jobling@Swansea.ac.uk',
+            'date'   => '2008-13-02',
+            'name'   => 'Command Line Interface (CLI) Plugin',
+            'desc'   => 'Renders transcripts of command line interactions, e.g. for shell and dynamic language interpretor tutorials',
+            'url'    => 'http://eehope.swan.ac.uk/dokuwiki/plugins:cli',
+        );
+    }
+ 
+    /**
+     * What kind of syntax are we?
+     */
+    function getType(){
+        return 'protected';
+    }
+ 
+    /**
+     * What kind of syntax do we allow (optional)
+     */
+//    function getAllowedTypes() {
+//        return array();
+//    }
+ 
+    // override default accepts() method to allow nesting
+    // - ie, to get the plugin accepts its own entry syntax
+    function accepts($mode) {
+        if ($mode == substr(get_class($this), 7)) return true;
+        return parent::accepts($mode);
+    }
+    
+    /**
+     * What about paragraphs? (optional)
+     */
+    function getPType(){
+        return 'block';
+    }
+ 
+    /**
+     * Where to sort in?
+     */ 
+    function getSort(){
+        return 601;
+    }
+ 
+ 
+    /**
+     * Connect pattern to lexer
+     */
+    function connectTo($mode) {
+         $this->Lexer->addEntryPattern('<cli(?:[)]?' .
+             '"(?:\\\\.|[^\\\\"])*"' .     /* double-quoted string */
+             '|\'(?:\\\\.|[^\'\\\\])*\'' . /* single-quoted string */
+             '|\\\\.' .                    /* escaped character */
+             '|[^\'"\\\\>]|[(?:])*>\r?\n?(?=.*?</cli>)',$mode,'plugin_cli');
+         /*
+          * The [)]? and |[(?:] is to work around a bug in lexer.php
+          * wrt nested (...)
+         */
+    }
+ 
+    function postConnect() {
+       $this->Lexer->addExitPattern('\r?\n?</cli>','plugin_cli');
+    }
+ 
+ 
+    /**
+     * Handle the match
+     */
+    function handle($match, $state, $pos, &$handler){
+        switch ($state) {
+          case DOKU_LEXER_ENTER :
+            $args = substr($match, 4, -1);
+            return array($state, $args);
+          case DOKU_LEXER_MATCHED :
+            break;
+          case DOKU_LEXER_UNMATCHED :
+            return array($state, $match);
+          case DOKU_LEXER_EXIT :
+            return array($state, '');
+          case DOKU_LEXER_SPECIAL :
+            break;
+        }
+        return array();
+    }
+ 
+    /**
+     * Create output
+     */
+    function render($mode, &$renderer, $data) {
+        if($mode == 'xhtml'){
+             list($state, $match) = $data;
+             switch ($state) {
+             case DOKU_LEXER_ENTER :
+                 $args = $match;
+                 $this->_process_args($args);
+                 $renderer->doc .= '<pre class="cli">';
+                 break;
+             case DOKU_LEXER_UNMATCHED : 
+                 $this->_render_conversation($match, $renderer);
+                 break;
+             case DOKU_LEXER_EXIT :
+                 $renderer->doc .= "</pre>";
+                 break;
+             }
+             return true;
+        }
+        return false;
+    }
+ 
+     function _extract($args, $param) {
+         /*
+          * extracts value from $args for $param
+          * xxx = "foo\"bar"  -> foo"bar
+          * xxx = a\ b        -> a b
+          * xxx = 'a\' b'     -> a' b
+          *
+          * returns null if value is empty.
+          */
+         if (preg_match("/$param" . '\s*=\s*(' .
+             '"(?:\\\\.|[^\\\\"])*"' .     /* double-quoted string */
+             '|\'(?:\\\\.|[^\'\\\\])*\'' . /* single-quoted string */
+             '|(?:\\\\.|[^\\\\\s])*' .     /* escaped characters */
+             ')/', $args, $matches)) {
+             switch (substr($matches[1], 0, 1)) {
+             case "'":
+                 $result = substr($matches[1], 1, -1);
+                 $result = preg_replace('/\\\\([\'\\\\])/', '$1', $result);
+                 break;
+             case '"':
+                 $result = substr($matches[1], 1, -1);
+                 $result = preg_replace('/\\\\(["\\\\])/', '$1', $result);
+                 break;
+             default:
+                 $result = preg_replace('/\\\\(.)/', '$1', $matches[1]);
+             }
+             if ($result != "")
+                 return $result;
+         }
+     }
+ 
+     function _process_args($args) {
+         // process args to CLI tag: sets $comment_str and $prompt_str
+         if (!is_null($prompt = $this->_extract($args, 'prompt')))
+             $this->prompt_str = $prompt;
+         if (!is_null($comment = $this->_extract($args, 'comment')))
+             $this->comment_str = $comment;
+     }
+    
+    function _render_conversation($match, &$renderer) {
+        $prompt_continues = false;
+        $lines = preg_split('/\n\r|\n|\r/',$match);
+        if ( trim($lines[0]) == "" ) unset( $lines[0] );
+        if ( trim($lines[count($lines)]) == "" ) unset( $lines[count($lines)] );
+        foreach ($lines as $line) {
+            $index = strpos($line, $this->prompt_str);
+            if ($index === false) {   
+                if ($this->prompt_continues) {
+                  if (preg_match($this->prompt_cont, $line, $promptc) === 0) $this->prompt_continues = false;
+                }
+                if ($this->prompt_continues) {
+                    // format prompt
+                    $renderer->doc .= '<span class="cli_prompt">' . $renderer->_xmlEntities($promptc[0]) . "</span>";
+                    // Split line into command + optional comment (only end-of-line comments supported)
+                    $command =  preg_split($this->prompt_cont, $line);
+                    $commands = explode($this->comment_str, $command[1]);
+                    // Render command
+                    $renderer->doc .= '<span class="cli_command">' . $renderer->_xmlEntities($commands[0]) . "</span>";
+                    // Render comment if there is one
+                    if ($commands[1]) {
+                        $renderer->doc .= '<span class="cli_comment">' .
+                            $renderer->_xmlEntities($this->comment_str . $commands[1]) . "</span>";
+                  }
+                  $renderer->doc .= DOKU_LF;
+                } else {
+                  // render as output
+                  $renderer->doc .= '<span class="cli_output">' . $renderer->_xmlEntities($line) . "</span>" . DOKU_LF;
+                  $this->prompt_continues=false;
+                }
+            } else {
+                $this->prompt_continues = true;
+                // format prompt
+                $prompt = substr($line, 0, $index) . $this->prompt_str;
+                $renderer->doc .= '<span class="cli_prompt">' . $renderer->_xmlEntities($prompt) . "</span>";
+                // Split line into command + optional comment (only end-of-line comments supported)
+                $commands = explode($this->comment_str, substr($line, $index + strlen($this->prompt_str)));
+                // Render command
+                 $renderer->doc .= '<span class="cli_command">' . $renderer->_xmlEntities($commands[0]) . "</span>";
+                // Render comment if there is one
+                if ($commands[1]) {
+                     $renderer->doc .= '<span class="cli_comment">' .
+                        $renderer->_xmlEntities($this->comment_str . $commands[1]) . "</span>";
+                }
+                 $renderer->doc .= DOKU_LF;
+            }
+        }
+    }
+}
+//Setup VIM: ex: et ts=4 enc=utf-8 sw=4 :
+?>
+
+</code>
+
+
+==== style.css ====
+
+These may be modified to suit your own requirements.
+
+<code css>
+/* plugin:cli */
+
+.cli_output {
+	color: blue;
+}
+
+.cli_comment {
+	color: brown;
+}
+
+.cli_prompt {
+	color: green;
+}
+
+.cli_command {
+	color: red;
+}
+
+// nested CLI
+pre.cli pre.cli {
+	background-color: #F8F8F8;
+}
+
+/* end plugin:cli */
+</code>
+
+
+===== Revision History =====
+
+  * 2007-09-10 --- First release
+  * 2008-13-02 --- Several improvements to lexing and white space handling as suggested by Stephane Chazelas; continuation prompt support and whitespace handling improvements added by Any Webber.
+
+
+
+
+===== To Do =====
+ 
+  * It would be nice to support end of line markers for long command strings
+  * Doesn't work for transcripts that have no prompt: e.g. executable scripts. Better to use the ''<code>'' tag for these.
+
+===== Bugs =====
+
+  * Care needed for CLI's that use > to end a prompt -- done.
+  * Doesn't handle continuation prompts in shells that allow multi-line input. -- done (thanks to Andy Webber)
+  * Ruby's multiple output line decorators are likely to cause problems.
+  * Bound to be others ... this is my first DokuWiki plugin (actually it's my first attempt at PHP coding ^_^)
+  * following codes don't display right
+<code>
+<cli prompt="#">
+# rpm -ivh darcs-1.0.9-3.fc6.i386.rpm
+Preparing...                ########################################### [100%]
+   1:darcs                  ########################################### [100%]
+</cli>
+</code>
+
+===== Comments Please =====
+
+I modified the **_render_conversation** function to //remove// first and last blank lines, otherwise it produces two //blank excess output spans//.
+<code php>
+if ( trim($lines[0]) == "" ) unset( $lines[0] );
+if ( trim($lines[count($lines)]) == "" ) unset( $lines[count($lines)] );
+</code>
+This is just a quick hack and needs more afterthought, of course.
+
+I also did not like the "empty lines got removed" effect, thus the **preg_split** line was also modified:
+
+<code php>
+$lines = preg_split('/\n\r|\n|\r/',$match);
+</code>
+
+The previous comment still applies.
+
+Added to new release ... CPJ

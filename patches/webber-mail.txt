@@ -1,0 +1,42 @@
+From: Andy Webber [dokuwiki@andywebber.com]
+Sent: 07 February 2008 14:18
+To: Jobling C.P.
+Subject: dokuwiki: update to "cli"
+
+Attachments: syntax.php
+
+Hi Chris,
+
+Thanks for the cli plugin.
+
+I've made some updates that I wanted, and hopefully they tie in with what other people want too. I don't really want to fork the plugin, so I'm happy for you to incorporate the changes or build on them as you wish in your main distribution. Only syntax.php changed, my version is attached.
+
+In summary:
+- I've added command line continuation support. I did this with a regex because I wanted to get it working with Oracle SQL*plus which doesn't have a fixed continuation character. It should be good for a load of other continuations too. But I left the prompt detection as it was, so that markup is compatible across releases of cli. And I set the default continuation to match "> " for Bourne shell/bash.
+
+- there are a few spurious extra spaces emitted that I've got rid of.  
+They meant that the text didn't quite align as the original.
+
+- the default prompt pattern should really be "$ " with the space.  
+That'll reduce the number of times it falsely detects a command in the output.
+
+- I've included a change that was suggested on splitbrain - to remove spurious blank lines at beginning and end that you get if you format the input as below (cli on a line on its own).
+
+Example for Oracle SQL*plus (please feel free to use this on your site as an example):
+
+<cli prompt="SQL> " comment="--" continue="/^\s*[0-9]{1,4}  /">
+SQL> select
+   2  * --comment
+   3  from
+   4  dual;
+
+D
+-
+X
+
+SQL>
+</cli>
+
+Cheers
+Andy Webber
+

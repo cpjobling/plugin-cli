@@ -1,0 +1,44 @@
+From: Stephane Chazelas [stephane.chazelas@emerson.com]
+Sent: 18 December 2007 18:21
+To: Jobling C.P.
+Subject: [PATH] cli dokuwiki plugin
+
+Attachments: cli.diff; cli.diff.simple
+
+Hi Chris,
+
+thank you for the cli pluging. It is quite useful indeed for documenting screen captures.
+
+I have a number of comments and suggestions of enhancement for it (please see attach). Please let me know what you think about
+them:
+
+- the style for "pre.cli" hardcodes the font family, height,
+  background color, which may be different from what the <code>
+  or <file> tags use. Why not use the same attribute as those?
+  That would simply mean removing the pre.cli definition from
+  the css file
+- Using <cli prompt='whatever'> doesn't work because it is
+  stored in that case in $match[2]
+- <pre class='cli'> should be spelled <pre class="cli"> to be
+  xhtml conformant I believe.
+- in
+  <cli>
+  foo
+
+  bar
+  </cli>
+  an empty line was added at the bottom and at the top, and the
+  middle one was removed. And there were some extra spaces
+  added.
+- because we're in <pre>, <br/> can be replaces with real line
+  separators which makes the HTML source more legible.
+- there were some code indentation issues.
+
+I attach 2 patches that fix those /issues/.
+
+The first one allows: <cli prompt="\"foo">, <cli prompt=a\ b>, <cli prompt='a \' b'> but as it makes the matching regexp quite complicated which might slow down the whole dokuwiki, I suggest a simple one that only allows: <cli prompt="..."> (but also <cli prompt="\""> which should allow one to specify any prompt.
+
+Please let me know what you think and whether you'd like me to update the dokuwiki web site.
+
+kind regards,
+Stephane

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="1b8841ee-26af-4c31-ba1a-b7c42b050c6d" kpf_version="4" name="dokuwiki-plugins-cli.kpf">
+<preference-set idref="1b8841ee-26af-4c31-ba1a-b7c42b050c6d/syntax.php">
+  <string id="spellcheckLangID">en-US</string>
+</preference-set>
+<preference-set idref="1b8841ee-26af-4c31-ba1a-b7c42b050c6d">
+  <boolean id="import_live">1</boolean>
+</preference-set>
+</project>

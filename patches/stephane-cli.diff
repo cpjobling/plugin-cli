@@ -1,0 +1,183 @@
+diff -ur cli.old/style.css cli/style.css
+--- cli.old/style.css	2007-12-18 10:36:55.000000000 +0000
++++ cli/style.css	2007-12-17 14:16:32.000000000 +0000
+@@ -1,19 +1,4 @@
+ /* plugin:cli */
+- 
+-
+- 
+-pre.cli {
+-	font-family: "Courier New", Courier, mono;
+-	.cli font-weight: bold;
+-	padding-top: 4px;
+-	padding-bottom: 4px;
+-	padding-left: 16px;
+-	color: #BF0000;
+-	background-color: #F5F5F5;
+-	line-height: 1.4em;
+-	font-size: 0.96em;
+-}
+- 
+ .cli_output {
+ 	color: blue;
+ }
+diff -ur cli.old/syntax.php cli/syntax.php
+--- cli.old/syntax.php	2007-12-18 10:36:27.000000000 +0000
++++ cli/syntax.php	2007-12-18 18:02:34.000000000 +0000
+@@ -38,7 +38,7 @@
+         return array(
+             'author' => 'Chris P. Jobling',
+             'email'  => 'C.P.Jobling@Swansea.ac.uk',
+-            'date'   => '2007-09-14',
++            'date'   => '2007-12-18',
+             'name'   => 'Command Line Interface (CLI) Plugin',
+             'desc'   => 'Renders transcripts of command line interactions, e.g. for shell and dynamic language interpretor tutorials',
+             'url'    => 'http://eehope.swan.ac.uk/dokuwiki/plugins:cli',
+@@ -85,11 +85,19 @@
+      * Connect pattern to lexer
+      */
+     function connectTo($mode) {
+-      $this->Lexer->addEntryPattern('<cli(?:"[^"]*"|\'[^\']*\'|[^\'">])*>(?=.*?</cli>)',$mode,'plugin_cli');
++        $this->Lexer->addEntryPattern('<cli(?:[)]?' .
++            '"(?:\\\\.|[^\\\\"])*"' .     /* double-quoted string */
++            '|\'(?:\\\\.|[^\'\\\\])*\'' . /* single-quoted string */
++            '|\\\\.' .                    /* escaped character */
++            '|[^\'"\\\\>]|[(?:])*>\r?\n?(?=.*?</cli>)',$mode,'plugin_cli');
++        /*
++         * The [)]? and |[(?:] is to work around a bug in lexer.php
++         * wrt nested (...)
++         */
+     }
+- 
++
+     function postConnect() {
+-      $this->Lexer->addExitPattern('</cli>','plugin_cli');
++      $this->Lexer->addExitPattern('\r?\n?</cli>','plugin_cli');
+     }
+  
+  
+@@ -118,66 +126,89 @@
+      */
+     function render($mode, &$renderer, $data) {
+         if($mode == 'xhtml'){
+-              list($state, $match) = $data;
+-	      switch ($state) {
+-	      	case DOKU_LEXER_ENTER :
+-                    $args = $match;
+-                    $result = $this->_process_args($args);
+-                    $renderer->doc .= "<pre class='cli'>";
+-                    break;
+-		case DOKU_LEXER_UNMATCHED : 
+-                  $this->_render_conversation($match, $renderer);
+-                  break;
+-		case DOKU_LEXER_EXIT :
+-		  $renderer->doc .= "</pre>";
+-                  break;
+-              }
+-              return true;
++            list($state, $match) = $data;
++            switch ($state) {
++            case DOKU_LEXER_ENTER :
++                $args = $match;
++                $this->_process_args($args);
++                $renderer->doc .= '<pre class="cli">';
++                break;
++            case DOKU_LEXER_UNMATCHED : 
++                $this->_render_conversation($match, $renderer);
++                break;
++            case DOKU_LEXER_EXIT :
++                $renderer->doc .= "</pre>";
++                break;
++            }
++            return true;
+         }
+         return false;
+     }
+-    
+-    function _process_args($args) {
+-        // process args to CLI tag: sets $comment_str and $prompt_str
+-        $a_match = false;
+-        if ($args) {
+-            if (preg_match('/prompt\s*=\s*"([^"]*)"|\'([^\']*)\'/', $args, $matches)) {
+-                $this->prompt_str = $matches[1];
+-                $a_match = true;
+-            }
+-            if (preg_match('/comment\s*=\s*"([^"]*)"|\'([^\']*)\'/', $args, $matches)) {
+-                $this->comment_str = $matches[1];
+-                $a_match = true;
++
++    function _extract($args, $param) {
++        /*
++         * extracts value from $args for $param
++         * xxx = "foo\"bar"  -> foo"bar
++         * xxx = a\ b        -> a b
++         * xxx = 'a\' b'     -> a' b
++         *
++         * returns null if value is empty.
++         */
++        if (preg_match("/$param" . '\s*=\s*(' .
++            '"(?:\\\\.|[^\\\\"])*"' .     /* double-quoted string */
++            '|\'(?:\\\\.|[^\'\\\\])*\'' . /* single-quoted string */
++            '|(?:\\\\.|[^\\\\\s])*' .     /* escaped characters */
++            ')/', $args, $matches)) {
++            switch (substr($matches[1], 0, 1)) {
++            case "'":
++                $result = substr($matches[1], 1, -1);
++                $result = preg_replace('/\\\\([\'\\\\])/', '$1', $result);
++                break;
++            case '"':
++                $result = substr($matches[1], 1, -1);
++                $result = preg_replace('/\\\\(["\\\\])/', '$1', $result);
++                break;
++            default:
++                $result = preg_replace('/\\\\(.)/', '$1', $matches[1]);
+             }
++            if ($result != "")
++                return $result;
+         }
+-        return $a_match;
++    }
++
++    function _process_args($args) {
++        // process args to CLI tag: sets $comment_str and $prompt_str
++        if (!is_null($prompt = $this->_extract($args, 'prompt')))
++            $this->prompt_str = $prompt;
++        if (!is_null($comment = $this->_extract($args, 'comment')))
++            $this->comment_str = $comment;
+     }
+     
+     function _render_conversation($match, $renderer) {
+-        $lines = preg_split('/[\n\r]+/',$match);
++        $lines = preg_split('/\r?\n/',$match);
+         foreach ($lines as $line) {
+             $index = strpos($line, $this->prompt_str);
+             if ($index === false) {   
+                 // render as output
+-                $renderer->doc .= "<span class='cli_output'> " . $renderer->_xmlEntities($line) . "</span><br />";
++                $renderer->doc .= '<span class="cli_output">' . $renderer->_xmlEntities($line) . "</span>" . DOKU_LF;
+             }
+             else {
+                 // format prompt
+                 $prompt = substr($line, 0, $index) . $this->prompt_str;
+-                $renderer->doc .= "<span class='cli_prompt'> " . $renderer->_xmlEntities($prompt) . "</span>";
++                $renderer->doc .= '<span class="cli_prompt">' . $renderer->_xmlEntities($prompt) . "</span>";
+                 // Split line into command + optional comment (only end-of-line comments supported)
+                 $commands = explode($this->comment_str, substr($line, $index + strlen($this->prompt_str)));
+                 // Render command
+-                $renderer->doc .= "<span class='cli_command'> " . $renderer->_xmlEntities($commands[0]) . "</span>";
++                $renderer->doc .= '<span class="cli_command">' . $renderer->_xmlEntities($commands[0]) . "</span>";
+                 // Render comment if there is one
+                 if ($commands[1]) {
+-                    $renderer->doc .= "<span class='cli_comment'> " .
++                    $renderer->doc .= '<span class="cli_comment">' .
+                         $renderer->_xmlEntities($this->comment_str . $commands[1]) . "</span>";
+                 }
+-                $renderer->doc .= "<br />";
++                $renderer->doc .= DOKU_LF;
+             }
+         }
+     }
+ }
+-//Setup VIM: ex: et ts=4 enc=utf-8 :
++//Setup VIM: ex: et ts=4 enc=utf-8 sw=4 :
+ ?>

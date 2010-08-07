@@ -1,0 +1,207 @@
+====== Tests of CLI Plugin ======
+
+This page provides a set of test cases for the [[plugins:cli|CLI Plugin]] and also serves as an example of its use.
+
+===== Basic Shell Script =====
+
+Wiki text:
+   <cli>
+   user@host:~/somedir $ ls
+   conf      lang         README        screen.gif  ui
+   info.txt  manager.dat  renderer.php  syntax.php
+   user@host:~/somedir $ wc info.txt # count words in info.txt
+   55 108 1032 info.txt
+   user@host:~/somedir $
+   </cli>
+
+Rendered result: 
+
+<cli>
+user@host:~/somedir $ ls
+conf      lang         README        screen.gif  ui
+info.txt  manager.dat  renderer.php  syntax.php
+user@host:~/somedir $ wc info.txt # count words in info.txt
+55 108 1032 info.txt
+user@host:~/somedir $
+</cli>
+
+
+
+===== Shell Script with Comments =====
+
+<cli comment="#">
+user@host:~/somedir $ ls # List current directory
+conf      lang         README        screen,gif  ui
+info.txt  manager.dat  renderer.php  syntax.php
+user@host:~/somedir $ 
+</cli>
+
+
+
+===== Root Shell Script with Comments =====
+
+This (default shell comment character):
+
+   <cli prompt="#">
+   root@host:~user/somedir # ls # List current directory
+   conf      lang         README        screen,gif  ui
+   info.txt  manager.dat  renderer.php  syntax.php
+   root@host:~user/somedir # 
+   </cli>
+
+renders as this:
+
+<cli prompt="#">
+root@host:~user/somedir # ls # List current directory
+conf      lang         README        screen,gif  ui
+info.txt  manager.dat  renderer.php  syntax.php
+root@host:~user/somedir # 
+</cli>
+
+This is also valid:
+
+   <cli prompt="# " comment="#">
+   root@host:~user/somedir # ls # List current directory
+   conf      lang         README        screen,gif  ui
+   info.txt  manager.dat  renderer.php  syntax.php
+   root@host:~user/somedir # 
+   </cli> 
+
+<cli prompt="# " comment="#">
+root@host:~user/somedir # ls # List current directory
+conf      lang         README        screen,gif  ui
+info.txt  manager.dat  renderer.php  syntax.php
+root@host:~user/somedir # 
+</cli>
+
+Example with a continuation prompt:
+
+    <cli prompt="$ " continue="> " comment="#">
+    user@host:~/somedir $ ls \
+    > # List directory
+         file1 file2
+    </cli>
+
+<cli prompt="$ " continue="> " comment="#">
+user@host:~/somedir $ ls \
+> # List directory
+file1 file2
+</cli>
+
+
+===== Shell Script with Comments =====
+
+<cli prompt="$" comment="#">
+user@host:~/somedir $ ls # List current directory
+conf      lang         README        screen,gif  ui
+info.txt  manager.dat  renderer.php  syntax.php
+user@host:~/somedir $ 
+</cli>
+
+
+
+===== Windows Command Window =====
+
+Wiki text:
+
+<cli prompt=">" comment="REM">
+C:\Users\User>REM hello world!
+C:\Users\User>echo 'hello world!'
+'hello world!'
+</cli>
+
+Rendered result:
+
+<cli prompt=">" comment="REM">
+C:\Users\User>REM hello world!
+C:\Users\User>echo 'hello world!'
+'hello world!'
+</cli>
+
+===== Ruby irb =====
+
+Simple minded implementation will not work for results as end of prompt is same as results marker!
+<cli prompt=">">
+irb(main):001:0> 2+2
+=> 4
+irb(main):002:0>
+</cli>
+
+===== Python =====
+
+<cli prompt=">>>">
+ActivePython 2.5.1.1 (ActiveState Software Inc.) based on
+Python 2.5.1 (r251:54863, May  1 2007, 17:47:05) [MSC v.1310 32 bit (Intel)] on
+win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> 2+2
+4
+>>>
+</cli>
+
+
+
+===== Python + Windows Shell (Nested CLIs) =====
+
+Wiki text:
+   <cli prompt=">">
+   C:\Users\Chris Jobling>python
+   <cli prompt=">>>">
+   ActivePython 2.5.1.1 (ActiveState Software Inc.) based on
+   Python 2.5.1 (r251:54863, May  1 2007, 17:47:05) [MSC v.1310 32 bit (Intel)] on
+   win32
+   Type "help", "copyright", "credits" or "license" for more information.
+   >>> 2+2
+   4
+   >>> ^Z
+   
+   </cli>
+   C:\Users\Chris Jobling>
+   </cli>
+
+Rendered result:
+Wiki text:
+<cli prompt=">">
+C:\Users\Chris Jobling>python
+<cli prompt=">">
+ActivePython 2.5.1.1 (ActiveState Software Inc.) based on
+Python 2.5.1 (r251:54863, May  1 2007, 17:47:05) [MSC v.1310 32 bit (Intel)] on
+win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> 2+2
+4
+>>> ^Z
+
+</cli>
+C:\Users\Chris Jobling>
+</cli>
+
+===== Corner Cases =====
+
+  * The following codes don't display right
+<code>
+<cli prompt="#">
+# rpm -ivh darcs-1.0.9-3.fc6.i386.rpm
+Preparing...                ########################################### [100%]
+   1:darcs                  ########################################### [100%]
+</cli>
+</code>
+
+<cli prompt="#">
+# rpm -ivh darcs-1.0.9-3.fc6.i386.rpm
+Preparing...                ########################################### [100%]
+   1:darcs                  ########################################### [100%]
+</cli>
+
+Not sure to do about this as download progress marker uses same character as prompt!
+
+  * CLI shouldn't silently eat intentional blank lines:
+
+<cli prompt="$" comment="#">
+user@host:~/somedir $ ls # List current directory
+conf      lang         README        screen,gif  ui
+info.txt  manager.dat  renderer.php  syntax.php
+
+
+user@host:~/somedir $ # I intended there to be two blank lines above!
+</cli>

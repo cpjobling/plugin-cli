@@ -1,0 +1,24 @@
+/* plugin:cli */
+ 
+.cli_output {
+	color: blue;
+}
+
+.cli_comment {
+	color: brown;
+}
+
+.cli_prompt {
+	color: green;
+}
+
+.cli_command {
+	color: red;
+}
+
+// nested CLI
+pre.cli pre.cli {
+	background-color: #F8F8F8;
+}
+
+/* end plugin:cli */
