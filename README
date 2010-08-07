@@ -1,0 +1,4 @@
+This plugin brings a Command Line Interface formatter to Dokuwiki allowing you to format the output of a transcript say for a user manual or on-line tutorial. It is designed to work with the output of a standard Unix Bash Shell, but should be suitable to document other kinds of CLI interaction, e.g. Windows Command Window, Python and Ruby, Matlab, etc.
+
+I made this plugin for personal use and haven't needed to change it. If you want to add functionallity, please fork it!
+
