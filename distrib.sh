@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # make distributable version of plugin
 DOKUWIKI=~/Sites/dokuwiki
@@ -11,8 +11,8 @@ zip -r plugin-cli.zip ./plugin-cli
 
 echo "Installing files to $DOKUWIKI"
 cp /tmp/plugin-cli.{tar.gz,zip} $DOKUWIKI/lib/plugins
-cp /tmp/cli/cli-plugin.txt $DOKUWIKI/data/pages/plugins/cli.txt
-cp /tmp/cli/cli-examples.txt $DOKUWIKI/data/pages/test/cli.txt
+cp /tmp/plugin-cli/cli-plugin.txt $DOKUWIKI/data/pages/plugins/cli.txt
+cp /tmp/plugin-cli/cli-examples.txt $DOKUWIKI/data/pages/test/cli.txt
 dos2unix $DOKUWIKI/data/pages/{test/cli.txt,plugins/cli.txt}
 
 echo "Cleaning up"
