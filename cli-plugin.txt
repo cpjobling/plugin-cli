@@ -27,7 +27,9 @@ It is possible to adjust the style of the display using a style sheet. For detai
 
 ==== Notes ====
 
-  * My version of this page -- which could be more recently updated -- can be found [[http://eehope.swan.ac.uk/dokuwiki/plugins:cli|here]]
+  * My version of this page -- which could be more recently updated -- can be found [[http://www.cpjobling.org.uk/dokuwiki/plugins:cli|here]]
+
+  * Since 7 August 20101 soource code is now hosted at GitHub 
 
 
 
