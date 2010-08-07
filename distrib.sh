@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # make distributable version of plugin
-DOKUWIKI=/cygdrive/c/xampp/htdocs/dokuwiki
+DOKUWIKI=~/Sites/dokuwiki
 
 echo "Creating distribution"
-svn export . /tmp/cli
+git clone ~/dev/plugin-cli /tmp/plugin-cli
 cd /tmp
-tar cvfz plugin-cli.tar.gz ./cli
-zip -r plugin-cli.zip ./cli
+tar cvfz plugin-cli.tar.gz ./plugin-cli
+zip -r plugin-cli.zip ./plugin-cli
 
 echo "Installing files to $DOKUWIKI"
 cp /tmp/plugin-cli.{tar.gz,zip} $DOKUWIKI/lib/plugins
@@ -17,7 +17,7 @@ dos2unix $DOKUWIKI/data/pages/{test/cli.txt,plugins/cli.txt}
 
 echo "Cleaning up"
 rm /tmp/plugin-cli.{tar.gz,zip}
-rm -rf /tmp/cli
+rm -rf /tmp/plugin-cli
 
 
 

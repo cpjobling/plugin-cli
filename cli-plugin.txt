@@ -5,7 +5,7 @@ description: Format command line transcripts
 author     : Chris P. Jobling
 email      : C.P.Jobling@Swansea.ac.uk
 type       : syntax
-lastupdate : 2008-02-13
+lastupdate : 2010-08-07
 compatible : 
 depends    : 
 conflicts  : 
@@ -29,7 +29,10 @@ It is possible to adjust the style of the display using a style sheet. For detai
 
   * My version of this page -- which could be more recently updated -- can be found [[http://www.cpjobling.org.uk/dokuwiki/plugins:cli|here]]
 
-  * Since 7 August 20101 soource code is now hosted at GitHub 
+  * Since 7 August 2010 the source for this plugin code has been hosted at GitHub at http://github.com/cpjobling/plugin-cli. To install the plugin when you have ''git'' installed on your DokuWiki server, you just need to:
+
+  cd ../dokuwiki/plugins
+  git clone git://github.com/cpjobling/plugin-cli.git cli 
 
 
 
@@ -83,7 +86,7 @@ The full syntax:
 
 The opening ''**<cli ... >**'' must all appear on one line.  The transcript contents can appear over as many lines as are needed.
 
-See the plugin in action [[http://eehope.swan.ac.uk/dokuwiki/test:cli|here]]. The sample page shows examples from a number of CLI interfaces, including various shells, dynamic language interpreters and Matlab.
+See the plugin in action [[http://www.cpjobling.org.uk/dokuwiki/test:cli|here]]. The sample page shows examples from a number of CLI interfaces, including various shells, dynamic language interpreters and Matlab.
 
 ===== Configuration =====
 
@@ -92,10 +95,9 @@ The plugin has no configuration settings, although you may want to review the de
 
 
 ===== Installation =====
-
 ==== Sources: ====
 
-  * Current: [[http://eehope.swan.ac.uk/~eechris/dokuwiki/plugins/plugin-cli.zip|zip format (5k)]], [[http://eehope.swan.ac.uk/~eechris/dokuwiki/plugins/plugin-cli.tar.gz|tar.gz format (4k)]]
+  * Current: [[http://github.com/downloads/cpjobling/plugin-cli/plugin-cli.zip|zip format (5k)]], [[http://github.com/downloads/cpjobling/plugin-cli/plugin-cli.zip|tar.gz format (4k)]]
 
 If your wiki uses the [[plugin:plugin|plugin manager]] you can use them with the links above to install the plugin.  
 
@@ -400,9 +402,7 @@ pre.cli pre.cli {
 
   * 2007-09-10 --- First release
   * 2008-13-02 --- Several improvements to lexing and white space handling as suggested by Stephane Chazelas; continuation prompt support and whitespace handling improvements added by Any Webber.
-
-
-
+  * 2010-07-08 --- Hosting moved to GitHub. Note, hosting of examples at http://www.cpjobling.org.uk may not be stable.
 
 ===== To Do =====
  
