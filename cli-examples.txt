@@ -1,18 +1,18 @@
 ====== Tests of CLI Plugin ======
 
-This page provides a set of test cases for the [[plugins:cli|CLI Plugin]] and also serves as an example of its use.
+This page provides a set of test cases for the [[doku>plugin:cli|CLI Plugin]] and also serves as an example of its use. (([[https://raw.github.com/cpjobling/plugin-cli/master/cli-examples.txt]]))
 
 ===== Basic Shell Script =====
 
 Wiki text:
-   <cli>
-   user@host:~/somedir $ ls
-   conf      lang         README        screen.gif  ui
-   info.txt  manager.dat  renderer.php  syntax.php
-   user@host:~/somedir $ wc info.txt # count words in info.txt
-   55 108 1032 info.txt
-   user@host:~/somedir $
-   </cli>
+  <cli>
+  user@host:~/somedir $ ls
+  conf      lang         README        screen.gif  ui
+  info.txt  manager.dat  renderer.php  syntax.php
+  user@host:~/somedir $ wc info.txt # count words in info.txt
+  55 108 1032 info.txt
+  user@host:~/somedir $
+  </cli>
 
 Rendered result: 
 
@@ -29,9 +29,20 @@ user@host:~/somedir $
 
 ===== Shell Script with Comments =====
 
+Wiki text:
+
+  <cli comment="#">
+  user@host:~/somedir $ ls # List current directory
+  conf      lang         README        screen.gif  ui
+  info.txt  manager.dat  renderer.php  syntax.php
+  user@host:~/somedir $ 
+  </cli>
+
+Rendered result:
+
 <cli comment="#">
 user@host:~/somedir $ ls # List current directory
-conf      lang         README        screen,gif  ui
+conf      lang         README        screen.gif  ui
 info.txt  manager.dat  renderer.php  syntax.php
 user@host:~/somedir $ 
 </cli>
@@ -42,45 +53,45 @@ user@host:~/somedir $
 
 This (default shell comment character):
 
-   <cli prompt="#">
-   root@host:~user/somedir # ls # List current directory
-   conf      lang         README        screen,gif  ui
-   info.txt  manager.dat  renderer.php  syntax.php
-   root@host:~user/somedir # 
-   </cli>
+  <cli prompt="#">
+  root@host:~user/somedir # ls # List current directory
+  conf      lang         README        screen.gif  ui
+  info.txt  manager.dat  renderer.php  syntax.php
+  root@host:~user/somedir # 
+  </cli>
 
 renders as this:
 
 <cli prompt="#">
 root@host:~user/somedir # ls # List current directory
-conf      lang         README        screen,gif  ui
+conf      lang         README        screen.gif  ui
 info.txt  manager.dat  renderer.php  syntax.php
 root@host:~user/somedir # 
 </cli>
 
 This is also valid:
 
-   <cli prompt="# " comment="#">
-   root@host:~user/somedir # ls # List current directory
-   conf      lang         README        screen,gif  ui
-   info.txt  manager.dat  renderer.php  syntax.php
-   root@host:~user/somedir # 
-   </cli> 
+  <cli prompt="# " comment="#">
+  root@host:~user/somedir # ls # List current directory
+  conf      lang         README        screen.gif  ui
+  info.txt  manager.dat  renderer.php  syntax.php
+  root@host:~user/somedir # 
+  </cli> 
 
 <cli prompt="# " comment="#">
 root@host:~user/somedir # ls # List current directory
-conf      lang         README        screen,gif  ui
+conf      lang         README        screen.gif  ui
 info.txt  manager.dat  renderer.php  syntax.php
 root@host:~user/somedir # 
 </cli>
 
 Example with a continuation prompt:
 
-    <cli prompt="$ " continue="> " comment="#">
-    user@host:~/somedir $ ls \
-    > # List directory
-         file1 file2
-    </cli>
+  <cli prompt="$ " continue="> " comment="#">
+  user@host:~/somedir $ ls \
+  > # List directory
+  file1 file2
+  </cli>
 
 <cli prompt="$ " continue="> " comment="#">
 user@host:~/somedir $ ls \
@@ -91,9 +102,20 @@ file1 file2
 
 ===== Shell Script with Comments =====
 
+Wiki text:
+
+  <cli prompt="$" comment="#">
+  user@host:~/somedir $ ls # List current directory
+  conf      lang         README        screen.gif  ui
+  info.txt  manager.dat  renderer.php  syntax.php
+  user@host:~/somedir $ 
+  </cli>
+
+Rendered result:
+
 <cli prompt="$" comment="#">
 user@host:~/somedir $ ls # List current directory
-conf      lang         README        screen,gif  ui
+conf      lang         README        screen.gif  ui
 info.txt  manager.dat  renderer.php  syntax.php
 user@host:~/somedir $ 
 </cli>
@@ -104,11 +126,11 @@ user@host:~/somedir $
 
 Wiki text:
 
-<cli prompt=">" comment="REM">
-C:\Users\User>REM hello world!
-C:\Users\User>echo 'hello world!'
-'hello world!'
-</cli>
+  <cli prompt=">" comment="REM">
+  C:\Users\User>REM hello world!
+  C:\Users\User>echo 'hello world!'
+  'hello world!'
+  </cli>
 
 Rendered result:
 
@@ -121,6 +143,17 @@ C:\Users\User>echo 'hello world!'
 ===== Ruby irb =====
 
 Simple minded implementation will not work for results as end of prompt is same as results marker!
+
+Wiki text:
+
+  <cli prompt=">">
+  irb(main):001:0> 2+2
+  => 4
+  irb(main):002:0>
+  </cli>
+
+Rendered result:
+
 <cli prompt=">">
 irb(main):001:0> 2+2
 => 4
@@ -128,6 +161,20 @@ irb(main):002:0>
 </cli>
 
 ===== Python =====
+
+Wiki text:
+
+  <cli prompt=">>>">
+  ActivePython 2.5.1.1 (ActiveState Software Inc.) based on
+  Python 2.5.1 (r251:54863, May  1 2007, 17:47:05) [MSC v.1310 32 bit (Intel)] on
+  win32
+  Type "help", "copyright", "credits" or "license" for more information.
+  >>> 2+2
+  4
+  >>>
+  </cli>
+
+Rendered result:
 
 <cli prompt=">>>">
 ActivePython 2.5.1.1 (ActiveState Software Inc.) based on
@@ -144,23 +191,24 @@ Type "help", "copyright", "credits" or "license" for more information.
 ===== Python + Windows Shell (Nested CLIs) =====
 
 Wiki text:
-   <cli prompt=">">
-   C:\Users\Chris Jobling>python
-   <cli prompt=">>>">
-   ActivePython 2.5.1.1 (ActiveState Software Inc.) based on
-   Python 2.5.1 (r251:54863, May  1 2007, 17:47:05) [MSC v.1310 32 bit (Intel)] on
-   win32
-   Type "help", "copyright", "credits" or "license" for more information.
-   >>> 2+2
-   4
-   >>> ^Z
-   
-   </cli>
-   C:\Users\Chris Jobling>
-   </cli>
+
+  <cli prompt=">">
+  C:\Users\Chris Jobling>python
+  <cli prompt=">>>">
+  ActivePython 2.5.1.1 (ActiveState Software Inc.) based on
+  Python 2.5.1 (r251:54863, May  1 2007, 17:47:05) [MSC v.1310 32 bit (Intel)] on
+  win32
+  Type "help", "copyright", "credits" or "license" for more information.
+  >>> 2+2
+  4
+  >>> ^Z
+  
+  </cli>
+  C:\Users\Chris Jobling>
+  </cli>
 
 Rendered result:
-Wiki text:
+
 <cli prompt=">">
 C:\Users\Chris Jobling>python
 <cli prompt=">">
@@ -199,7 +247,7 @@ Not sure to do about this as download progress marker uses same character as pro
 
 <cli prompt="$" comment="#">
 user@host:~/somedir $ ls # List current directory
-conf      lang         README        screen,gif  ui
+conf      lang         README        screen.gif  ui
 info.txt  manager.dat  renderer.php  syntax.php
 
 
